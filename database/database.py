@@ -162,16 +162,3 @@ class Database:
         
         
         
-async def main():
-    db = Database('postgresql://izeb:izeb@localhost:5432/main')
-    
-    await db.create_tables()
-    
-    print('OK')
-    
-    await asyncio.sleep(10)
-    
-    
-import asyncio
-
-asyncio.run(main())
