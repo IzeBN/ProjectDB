@@ -1,0 +1,2 @@
+asyncpg==0.28.0
+typing_extensions==4.7.1
