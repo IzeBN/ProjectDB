@@ -1,12 +1,15 @@
 import asyncpg as sq
 from uuid import uuid4
 from time import time
+import asyncio
+
+import __dataclasses as t
+import __queries as q
 
 class Database:
     
     def __init__(self, dsn) -> None:
         self.__is_connection: bool = False
-        self.__db = None
         self.__dsn = dsn
         
     async def __connect(self):
@@ -18,7 +21,6 @@ class Database:
         self.__is_connection = True
     
     def check_db_connect(method):
-        """Async decorator by db connect"""
         async def wrapper(self, *args, **kwargs):
             if not self.__is_connection:
                 await self.__connect()
@@ -26,7 +28,7 @@ class Database:
         return wrapper
     
     @check_db_connect
-    async def create_tables(self):
+    async def create_tables(self) -> str:
         async with self.db.acquire() as conn:
             async with conn.transaction():
                 await conn.execute(
@@ -101,7 +103,7 @@ class Database:
                 )
                 
     @check_db_connect
-    async def __add_document(self, doc_type, data, issue_date, issue_by):
+    async def __add_document(self, doc_type, data, issue_date, issue_by) -> str:
         async with self.db.acquire() as conn:
             document = await conn.fetchval("""--sql
                                            SELECT document_id FROM document WHERE document_type = $1 AND data = $2""", doc_type, data)
@@ -114,7 +116,7 @@ class Database:
             return document
         
     @check_db_connect
-    async def __add_job_title(self, title, salary):
+    async def __add_job_title(self, title, salary) -> str:
         async with self.db.acquire() as conn:
             job_id = await conn.fetchval("""--sql
                                          SELECT job_id FROM job_title WHERE title = $1 AND salary = $2""", title, salary)
@@ -128,7 +130,7 @@ class Database:
                 
     @check_db_connect
     async def add_employee(self, job_title, job_salary, doc_type, doc_data, doc_issue_date, doc_issue_by,
-                           name, lastname, fatherly, date_birth, phone_number, addres, citizenship, experince, schedule):
+                           name, lastname, fatherly, date_birth, phone_number, addres, citizenship, experince, schedule) -> str:
         job_id = await self.__add_job_title(job_title, job_salary)
         document_id = await self.__add_document(doc_type, doc_data, doc_issue_date, doc_issue_by)
         async with self.db.acquire() as conn:
@@ -145,7 +147,7 @@ class Database:
     
     @check_db_connect
     async def add_client(self, doc_type, doc_data, doc_issue_date, doc_issue_by,
-                         name, lastname, fatherly, date_birth, phone_number, addres, place_work, tin, bank_card, count_purchases):
+                         name, lastname, fatherly, date_birth, phone_number, addres, place_work, tin, bank_card, count_purchases) -> str:
         document_id = await self.__add_document(doc_type, doc_data, doc_issue_date, doc_issue_by)
         async with self.db.acquire() as conn:
             client_id = await conn.fetchval("""--sql
@@ -160,5 +162,31 @@ class Database:
                 
             return client_id
         
+    @check_db_connect
+    async def find_users(self, user_type: str = None) -> t.Users | list[t.Employee] | list[t.Client]:
+        async with self.db.acquire() as conn:
+            if not user_type:
+                tables = ['employee', 'clients']
+                users = []
+                for table in tables:
+                    users.append(await conn.fetch(q.SELECT_USER.format(table=table, filter='')))
+                
+                employes, clients = await asyncio.gather(*[
+                    t.UserForm(users[i], ut) for i, ut in enumerate(tables)
+                ])
+                return t.Users(
+                    employes=employes,
+                    clients=clients
+                )
+            else:
+                users = await conn.fetch(q.SELECT_USER.format(table=user_type, filter=''))
+                return t.UserForm(users, user_type)
+                
+    @check_db_connect
+    async def find_user_by_id(self, user_id, user_type: str):
+        async with self.db.acquire() as conn:
+            user = await conn.fetchrow(q.SELECT_USER.format(table=user_type, filter=f'WHERE {user_type}.{user_type}_id = $1'), user_id)
+            return None if not user else (await t.UserForm([user], user_type))[0]
         
-        
+    @check_db_connect
+    async def fef():...

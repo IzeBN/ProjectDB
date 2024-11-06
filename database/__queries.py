@@ -24,5 +24,15 @@ SELECT_SALE_OR_AGREEMENT = """--sql
                             """
                             
 SELECT_USER = """--sql
-            
+            SELECT 
+                {table}.*
+                doc.document_type,
+                doc.data,
+                doc.issued_date,
+                doc.issued_by,
+            FROM {table}
+                JOIN document as doc ON doc.document_id = {table}.document_id
+            {filter}
             """
+            
+print(SELECT_USER.format(table='employee', filter=''))

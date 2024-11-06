@@ -76,12 +76,16 @@ class Sale:
     product: Product
     date: int
     
+@dataclass
+class Users:
+    employes: list[Employee]
+    clients: list[Client]
 
-async def UserForm(*args):
-    return Client(
-        *args[0:-6],
-        document=Document(*args[-6:-1])
-    )
+async def UserForm(list, user_type: str):
+    return [Employee(*args[0:-6], document=Document(*args[-6:-1])) for args in list] \
+        if user_type == 'employee' else \
+            [Client(*args[0:-6], document=Document(*args[-6:-1])) for args in list]
+        
 async def SaleForm(*args):
     return Sale(
         id=args[0],
