@@ -35,4 +35,3 @@ SELECT_USER = """--sql
             {filter}
             """
             
-print(SELECT_USER.format(table='employee', filter=''))
