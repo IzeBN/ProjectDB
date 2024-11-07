@@ -3,6 +3,8 @@ from uuid import uuid4
 from time import time
 import asyncio
 
+from typing import Union, Literal
+
 import __dataclasses as t
 import __queries as q
 
@@ -163,7 +165,7 @@ class Database:
             return client_id
         
     @check_db_connect
-    async def find_users(self, user_type: str = None) -> t.Users | list[t.Employee] | list[t.Client]:
+    async def find_users(self, user_type: Union[Literal['client', 'employee']] = None) -> Union[t.Users, list[t.Client], list[t.Employee]]:
         async with self.db.acquire() as conn:
             if not user_type:
                 tables = ['employee', 'clients']
@@ -180,13 +182,37 @@ class Database:
                 )
             else:
                 users = await conn.fetch(q.SELECT_USER.format(table=user_type, filter=''))
-                return t.UserForm(users, user_type)
+                return await t.UserForm(users, user_type)
                 
     @check_db_connect
-    async def find_user_by_id(self, user_id, user_type: str):
+    async def find_user_by_id(self, user_id, user_type: Union[Literal['client', 'employee']]):
         async with self.db.acquire() as conn:
             user = await conn.fetchrow(q.SELECT_USER.format(table=user_type, filter=f'WHERE {user_type}.{user_type}_id = $1'), user_id)
             return None if not user else (await t.UserForm([user], user_type))[0]
         
     @check_db_connect
-    async def find():...
+    async def find_items(self, item_type: Union[Literal['agreement', 'sale']] = None ) -> Union[list[t.Items], list[t.Sale], list[t.Agreement]]:
+        async with self.db.acquire() as conn:
+            if not item_type:
+                tables = ['agreement', 'sale']
+                items = []
+                for table in tables:
+                    items.append(await conn.fetch(q.SELECT_SALE_OR_AGREEMENT.format(table=table, filter='')))
+                agreement, sale = await asyncio.gather(*[
+                    t.ItemForm(items[i], table) for i, table in enumerate(tables)
+                ])
+                
+                return t.Items(
+                    sales=sale,
+                    agreements=agreement
+                )
+            else:
+                items = await conn.fetch(q.SELECT_SALE_OR_AGREEMENT.format(table=item_type, filter=''))
+                return await t.ItemForm(items, item_type)
+            
+    @check_db_connect
+    async def find_item_by_id(self, item_type: Union[Literal['agreement', 'sale']], item_id: int) -> Union[t.Agreement, t.Sale]:
+        async with self.db.acquire() as conn:
+            item = await conn.fetchrow(q.SELECT_SALE_OR_AGREEMENT.format(table=item_type, filter=f'WHERE {item_type}_id = $1'), item_id)
+            return None if not item else (await t.ItemForm([item], item_type))[0]
+        

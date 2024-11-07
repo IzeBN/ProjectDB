@@ -81,6 +81,11 @@ class Users:
     employes: list[Employee]
     clients: list[Client]
 
+@dataclass
+class Items:
+    sales: list[Sale]
+    agreements: list[Agreement]
+
 async def UserForm(list, user_type: str):
     return [Employee(*args[0:-6], document=Document(*args[-6:-1])) for args in list] \
         if user_type == 'employee' else \
