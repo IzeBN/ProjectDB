@@ -3,10 +3,14 @@ from uuid import uuid4
 from time import time
 import asyncio
 
+import logging
+
 from typing import Union, Literal
 
-import __dataclasses as t
-import __queries as q
+from . import __dataclasses as t
+from . import __queries as q
+
+db_logger = logging.getLogger('DATABASE')
 
 class Database:
     
@@ -26,7 +30,10 @@ class Database:
         async def wrapper(self, *args, **kwargs):
             if not self.__is_connection:
                 await self.__connect()
-            return await method(self, *args, **kwargs) 
+            try:
+                return await method(self, *args, **kwargs) 
+            except Exception as e:
+                db_logger.error(f'{method.__name__} | {e}')
         return wrapper
     
     @check_db_connect
