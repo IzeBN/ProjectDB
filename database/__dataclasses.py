@@ -63,10 +63,10 @@ class Product:
 @dataclass
 class Agreement:
     id: str
-    employee: Employee
     client: Client
+    employee: Employee
     product: Product
-    date_conclusions: int
+    date: int
     
 @dataclass
 class Sale:
@@ -86,15 +86,25 @@ async def UserForm(list, user_type: str):
         if user_type == 'employee' else \
             [Client(*args[0:-6], document=Document(*args[-6:-1])) for args in list]
         
-async def SaleForm(*args):
-    return Sale(
-        id=args[0],
-        client=Client(*args[1:12],
-                      document=Document(*args[12:17])),
-        employee=Employee(*args[17:30],
-                          document=Document(*args[30:35])),
-        product=Product(*args[35:42]),
-        date=args[-1]
-    )
+async def ItemForm(list, item_type: str):
+    return [Sale(
+                id=args[0],
+                client=Client(*args[1:12],
+                            document=Document(*args[12:17])),
+                employee=Employee(*args[17:30],
+                                document=Document(*args[30:35])),
+                product=Product(*args[35:42]),
+                date=args[-1]
+            ) for args in list
+        ] if item_type == 'sale' \
+    else [Agreement(
+                id=args[0],
+                client=Client(*args[1:12],
+                            document=Document(*args[12:17])),
+                employee=Employee(*args[17:30],
+                                document=Document(*args[30:35])),
+                product=Product(*args[35:42]),
+                date=args[-1]
+            ) for args in list
+        ]
     
-print([1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7][1:6])
