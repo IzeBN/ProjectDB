@@ -25,13 +25,15 @@ SELECT_SALE_OR_AGREEMENT = """--sql
                             
 SELECT_USER = """--sql
             SELECT 
-                {table}.*
+                {table}.*,
                 doc.document_type,
                 doc.data,
                 doc.issued_date,
-                doc.issued_by,
+                doc.issued_by
             FROM {table}
                 JOIN document as doc ON doc.document_id = {table}.document_id
             {filter}
             """
             
+def SELECT_ALL(table):
+    return f'SELECT * FROM {table}'

@@ -1,6 +1,6 @@
 import asyncpg as sq
 from uuid import uuid4
-from time import time
+from datetime import datetime
 import asyncio
 
 import logging
@@ -150,13 +150,13 @@ class Database:
                     new_employee_id = str(uuid4())
                     await conn.execute("""--sql
                                        INSERT INTO employee VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)""",
-                    new_employee_id, name, lastname, fatherly, date_birth, phone_number, addres, citizenship, job_id, 0, int(time()), experince, schedule)
+                    new_employee_id, name, lastname, fatherly, date_birth, int(phone_number), addres, citizenship, job_id, 0, datetime.now(), int(experince), schedule)
                     return new_employee_id
             return last_employee_id
     
     @check_db_connect
-    async def add_client(self, doc_type, doc_data, doc_issue_date, doc_issue_by,
-                         name, lastname, fatherly, date_birth, phone_number, addres, place_work, tin, bank_card, count_purchases) -> str:
+    async def add_client(self, name, lastname, fatherly, date_birth, phone_number, addres, place_work, tin, bank_card, count_purchases,
+                         doc_type, doc_data, doc_issue_date, doc_issue_by) -> str:
         document_id = await self.__add_document(doc_type, doc_data, doc_issue_date, doc_issue_by)
         async with self.db.acquire() as conn:
             client_id = await conn.fetchval("""--sql
@@ -166,11 +166,40 @@ class Database:
                     new_client_id = str(uuid4())
                     await conn.execute("""--sql
                                        INSERT INTO client VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)""",
-                    new_client_id, name, lastname, fatherly, date_birth, phone_number, addres, place_work, tin, bank_card, count_purchases, document_id)
+                    new_client_id, name, lastname, fatherly, date_birth, int(phone_number), addres, place_work, int(tin), int(bank_card), int(count_purchases), document_id)
                     return new_client_id
                 
             return client_id
+    @check_db_connect
+    async def add_sale(self, client_id, employee_id, product_id, date: datetime = datetime.now()):
+        async with self.db.acquire() as conn:
+            async with conn.transaction():
+                id = str(uuid4())
+                await conn.execute('''INSERT INTO sale VALUES($1, $2, $3, $4, $5)''',
+                                   id, client_id,
+                                   employee_id,
+                                   product_id,
+                                   date)
+    @check_db_connect
+    async def add_agreement(self, client_id, employee_id, product_id, date: datetime = datetime.now()):
+        async with self.db.acquire() as conn:
+            async with conn.transaction():
+                id = str(uuid4())
+                await conn.execute('''INSERT INTO agreement VALUES($1, $2, $3, $4, $5)''',
+                                   id, employee_id,
+                                   client_id,
+                                   product_id,
+                                   date)
         
+    @check_db_connect
+    async def add_product(self, title, description, date_release, cost, serial_number, product_id = str(uuid4())):
+        async with self.db.acquire() as conn:
+            async with conn.transaction():
+                await conn.execute('''INSERT INTO product VALUES($1, $2, $3, $4, $5, $6, $7)''',
+                                   product_id, title,
+                                   description, date_release,
+                                   cost, 0, serial_number)    
+    
     @check_db_connect
     async def find_users(self, user_type: Union[Literal['client', 'employee']] = None) -> Union[t.Users, list[t.Client], list[t.Employee]]:
         async with self.db.acquire() as conn:
@@ -223,3 +252,15 @@ class Database:
             item = await conn.fetchrow(q.SELECT_SALE_OR_AGREEMENT.format(table=item_type, filter=f'WHERE {item_type}_id = $1'), item_id)
             return None if not item else (await t.ItemForm([item], item_type))[0]
         
+
+    @check_db_connect
+    async def find_all_from_table(self, table):
+        async with self.db.acquire() as conn:
+            employes = await conn.fetch(q.SELECT_ALL(table))
+            if table == 'product':
+                return [t.Product(*em) for em in employes]
+        
+    
+        
+    
+    

@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-
+from datetime import datetime
 
 @dataclass
 class Document:
     id: str
     type: str
     data: str
-    issue_date: int
+    issue_date: datetime
     issue_by: str
     
 @dataclass
@@ -21,14 +21,14 @@ class Client:
     name: str
     lastname: str
     fatherly: str
-    date_birth: int
+    date_birth: datetime
     phone_number: int
     addres: str
     place_work: str
     tin: int
     bank_card: int
-    count_purchases: int
-    document: Document
+    count_purchases: int = None
+    document: Document = None
          
     
 @dataclass
@@ -37,16 +37,16 @@ class Employee:
     name: str
     lastname: str
     fatherly: str
-    date_birth: int
+    date_birth: datetime
     phone_number: int
     addres: str
     citizenship: str
     job_tittle: JobTitle
     sales_count: int
-    date_acceptance: int
+    date_acceptance: datetime
     experince: int
-    schedule: str
-    document: Document
+    schedule: str = None
+    document: Document = None
     
     
 @dataclass
@@ -54,7 +54,7 @@ class Product:
     id: str
     title: str
     description: str
-    date_release: int
+    date_release: datetime
     cost: int
     count_sales: int
     serial_number: str
@@ -66,7 +66,7 @@ class Agreement:
     client: Client
     employee: Employee
     product: Product
-    date: int
+    date: datetime
     
 @dataclass
 class Sale:
@@ -74,7 +74,7 @@ class Sale:
     client: Client
     employee: Employee
     product: Product
-    date: int
+    date: datetime
     
 @dataclass
 class Users:
