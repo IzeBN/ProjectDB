@@ -16,4 +16,4 @@ git clone https://github.com/username/project.git
 cd ProjectDB && pip install -r req.txt
 ```
 
-- В файле main замените dsn на свой авторизационный dsn PostgreSQL
+- В файле main.py\interface.py замените dsn на свой авторизационный dsn PostgreSQL
