@@ -62,4 +62,4 @@ select
 from gruppa
 join stud on stud.fk_gruppa_id = gruppa.gruppa_id
 group by gruppa.gruppa
-HAVING COUNT(stud.*) < 20;
+having count(stud.*) < 20;
