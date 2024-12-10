@@ -6,7 +6,7 @@ select
 	count(*) as count_tud,
 	avg(rost) as sred_rost
 from stud
-group by fk_gruppa_id;
+	group by fk_gruppa_id;
 
 -- самая рослая группа:
 select 
@@ -14,9 +14,9 @@ select
 	count(*) as count_tud,
 	avg(rost) as most
 from stud
-group by fk_gruppa_id
-order by most desc
-limit 1;
+	group by fk_gruppa_id
+	order by most desc
+	limit 1;
 
 -- exercize 2
 select 
@@ -26,15 +26,15 @@ select
 	min(ves) as minimal_weight
 from stud
 where rost > 1.70
-group by birthmonth;
+	group by birthmonth;
 
 -- самый легкий студент:
 select 
 	to_char(birthday, 'MM') as month,
 	ves
 from stud
-order by ves asc
-limit 1;
+	order by ves asc
+	limit 1;
 
 -- exercize 3
 select 
@@ -42,7 +42,7 @@ select
     floor(ves / 10) * 10 as weight_group,
     count(*) as count_stud
 from stud
-left join pol on pol.pol_id = stud.fk_pol_id
-group by ps, weight_group
-order by ps, weight_group;
+	left join pol on pol.pol_id = stud.fk_pol_id
+	group by ps, weight_group
+	order by ps, weight_group;
 
