@@ -41,7 +41,7 @@ select
 	stud.birthday,
 	extract (year from age('2009-09-01', stud.birthday)) as age
 from stud
-left join pol on stud.fk_pol_id = pol.pol_id
+	left join pol on stud.fk_pol_id = pol.pol_id
 where pol.pol_short = 'М'
 	and extract (year from age('2009-09-01', stud.birthday)) > extract (day from stud.birthday);
 
@@ -61,5 +61,5 @@ select
 		end
 	)
 from stud
-left join pol on pol.pol_id = stud.fk_pol_id
+	left join pol on pol.pol_id = stud.fk_pol_id
 where pol.pol_short = 'М';
